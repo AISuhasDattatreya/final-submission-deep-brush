@@ -18,4 +18,4 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"message": "DeepBush AST API"}
+    return {"message": "Deep Brush AST API"}
