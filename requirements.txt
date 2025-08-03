@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+gradio
+tensorflow
+tensorflow-hub
+pillow
+numpy
