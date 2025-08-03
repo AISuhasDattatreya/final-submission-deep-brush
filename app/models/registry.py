@@ -1,8 +1,10 @@
 from app.models.adain import AdaINModel
+from app.models.adain_vgg import AdaINVGGModel
 from app.models.wct import WCTModel
 
 model_map = {
     "adain": AdaINModel,
+    "adain_vgg": AdaINVGGModel,
     "wct": WCTModel
 }
 

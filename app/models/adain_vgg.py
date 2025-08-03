@@ -9,23 +9,49 @@ from scipy import ndimage
 warnings.filterwarnings('ignore', category=UserWarning)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-class AdaINModel:
+class AdaINVGGModel:
     def __init__(self):
         try:
             # Set TensorFlow to use CPU to avoid GPU-related issues
             tf.config.set_visible_devices([], 'GPU')
             
-            # Initialize encoder-decoder architecture
-            self.encoder = self._build_encoder()
+            # Load pre-trained VGG19 for feature extraction
+            self.vgg = self._load_vgg19()
+            
+            # Build decoder for reconstruction
             self.decoder = self._build_decoder()
             
-            print("AdaIN model initialized successfully with encoder-decoder architecture")
+            print("AdaIN VGG model initialized successfully")
         except Exception as e:
             print(f"Error initializing model: {e}")
 
-    def _build_encoder(self):
+    def _load_vgg19(self):
         """
-        Build a simple encoder using convolutional layers
+        Load pre-trained VGG19 model for feature extraction
+        """
+        try:
+            # Load VGG19 without top layers
+            vgg = tf.keras.applications.VGG19(
+                include_top=False,
+                weights='imagenet',
+                input_shape=(None, None, 3)
+            )
+            
+            # Create a model that outputs intermediate features
+            # We'll use the features from the 4th block (relu4_1)
+            feature_layers = ['block1_conv1', 'block2_conv1', 'block3_conv1', 'block4_conv1']
+            outputs = [vgg.get_layer(name).output for name in feature_layers]
+            
+            model = tf.keras.Model(inputs=vgg.input, outputs=outputs)
+            return model
+        except Exception as e:
+            print(f"Error loading VGG19: {e}")
+            # Fallback to a simpler model
+            return self._build_simple_encoder()
+
+    def _build_simple_encoder(self):
+        """
+        Fallback encoder if VGG19 is not available
         """
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
@@ -47,7 +73,7 @@ class AdaINModel:
 
     def _build_decoder(self):
         """
-        Build a decoder that reconstructs images from features
+        Build decoder for image reconstruction
         """
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(512, 3, padding='same', activation='relu'),
@@ -71,7 +97,6 @@ class AdaINModel:
     def instance_normalization(self, features):
         """
         Apply instance normalization to feature maps
-        Normalizes each spatial location independently across channels
         """
         # Calculate mean and variance for each spatial location
         mean = tf.reduce_mean(features, axis=-1, keepdims=True)
@@ -99,7 +124,7 @@ class AdaINModel:
 
     def stylize(self, content_np, style_np, alpha=1.0):
         """
-        True AdaIN stylization with neural network architecture
+        True AdaIN stylization using VGG features
         """
         try:
             # Convert to float and normalize
@@ -116,9 +141,13 @@ class AdaINModel:
             content_tensor = tf.convert_to_tensor(content[np.newaxis, ...])
             style_tensor = tf.convert_to_tensor(style[np.newaxis, ...])
             
-            # Extract features using encoder
-            content_features = self.encoder(content_tensor)
-            style_features = self.encoder(style_tensor)
+            # Extract features using VGG encoder
+            content_features_list = self.vgg(content_tensor)
+            style_features_list = self.vgg(style_tensor)
+            
+            # Use the deepest features (last layer) for AdaIN
+            content_features = content_features_list[-1]
+            style_features = style_features_list[-1]
             
             # Apply AdaIN
             stylized_features = self.adaptive_instance_normalization(content_features, style_features)
@@ -146,9 +175,9 @@ class AdaINModel:
     @staticmethod
     def metadata():
         return {
-            "name": "AdaIN (True Implementation)",
-            "type": "Neural Network Encoder-Decoder",
-            "features": "Feature space AdaIN, Instance normalization, Spatial-aware processing",
+            "name": "AdaIN VGG (True Implementation)",
+            "type": "VGG19 Encoder + Decoder",
+            "features": "VGG features, Instance normalization, Spatial-aware processing",
             "paper": "Huang & Belongie (2017) - Adaptive Instance Normalization",
             "real_time": True
-        }
+        } 

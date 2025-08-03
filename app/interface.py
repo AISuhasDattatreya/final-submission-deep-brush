@@ -79,7 +79,7 @@ with gr.Blocks() as demo:
     with gr.Row():
         content = gr.Image(label="Content Image")
         style = gr.Image(label="Style Image")
-    model_select = gr.Dropdown(["adain", "wct"], value="adain", label="Model")
+    model_select = gr.Dropdown(["adain", "adain_vgg", "wct"], value="adain", label="Model")
     alpha = gr.Slider(0, 1, value=1.0, label="Style Blend Alpha")
     output_img = gr.Image(label="Stylized Output")
     output_info = gr.Textbox(label="Model Info")
