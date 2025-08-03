@@ -1,3 +1,5 @@
+import numpy as np
+
 class WCTModel:
     def __init__(self):
         # TODO: load model layers for whitening/coloring transform
