@@ -75,7 +75,8 @@ class AdaINModel:
         """
         # Calculate mean and variance for each spatial location
         mean = tf.reduce_mean(features, axis=-1, keepdims=True)
-        var = tf.reduce_variance(features, axis=-1, keepdims=True)
+        # Use tf.math.reduce_variance instead of tf.reduce_variance
+        var = tf.math.reduce_variance(features, axis=-1, keepdims=True)
         
         # Normalize
         normalized = (features - mean) / tf.sqrt(var + 1e-8)
@@ -90,7 +91,8 @@ class AdaINModel:
         
         # Calculate style statistics
         style_mean = tf.reduce_mean(style_features, axis=-1, keepdims=True)
-        style_std = tf.sqrt(tf.reduce_variance(style_features, axis=-1, keepdims=True) + 1e-8)
+        # Use tf.math.reduce_variance instead of tf.reduce_variance
+        style_std = tf.sqrt(tf.math.reduce_variance(style_features, axis=-1, keepdims=True) + 1e-8)
         
         # Apply style statistics
         stylized = content_normalized * style_std + style_mean
