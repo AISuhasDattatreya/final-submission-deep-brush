@@ -14,22 +14,16 @@ def stylize(content, style, alpha, model):
         print(f"Content type: {type(content)}")
         print(f"Style type: {type(style)}")
         
-        # Handle numpy arrays from Gradio
+        # Handle numpy arrays from Gradio 5.x
         if isinstance(content, np.ndarray):
             print(f"Content array shape: {content.shape}")
             content_img = Image.fromarray(content)
-        elif isinstance(content, dict):
-            print(f"Content dict keys: {content.keys()}")
-            content_img = Image.open(content['name'])
         else:
             content_img = Image.open(content)
             
         if isinstance(style, np.ndarray):
             print(f"Style array shape: {style.shape}")
             style_img = Image.fromarray(style)
-        elif isinstance(style, dict):
-            print(f"Style dict keys: {style.keys()}")
-            style_img = Image.open(style['name'])
         else:
             style_img = Image.open(style)
         
@@ -74,17 +68,42 @@ def stylize(content, style, alpha, model):
         traceback.print_exc()
         return None, f"Error: {str(e)}"
 
-with gr.Blocks() as demo:
+# Create Gradio 5.x interface
+with gr.Blocks(title="Deep Brush: AST Model Comparison Tool") as demo:
     gr.Markdown("# Deep Brush: AST Model Comparison Tool")
+    gr.Markdown("Upload a content image and a style image to see different neural style transfer algorithms in action!")
+    
     with gr.Row():
-        content = gr.Image(label="Content Image")
-        style = gr.Image(label="Style Image")
-    model_select = gr.Dropdown(["adain", "adain_vgg", "wct"], value="adain", label="Model")
-    alpha = gr.Slider(0, 1, value=1.0, label="Style Blend Alpha")
-    output_img = gr.Image(label="Stylized Output")
-    output_info = gr.Textbox(label="Model Info")
-    btn = gr.Button("Stylize")
+        with gr.Column():
+            content = gr.Image(label="Content Image", type="pil")
+            style = gr.Image(label="Style Image", type="pil")
+        
+        with gr.Column():
+            model_select = gr.Dropdown(
+                choices=["adain", "adain_vgg", "wct", "ast"], 
+                value="adain", 
+                label="Model",
+                info="Choose the style transfer algorithm"
+            )
+            alpha = gr.Slider(
+                minimum=0, 
+                maximum=1, 
+                value=1.0, 
+                step=0.1,
+                label="Style Blend Alpha",
+                info="Higher values = more style, lower values = more content"
+            )
+            btn = gr.Button("Stylize", variant="primary")
+    
+    with gr.Row():
+        output_img = gr.Image(label="Stylized Output", type="pil")
+        output_info = gr.Textbox(label="Model Info", lines=3)
 
-    btn.click(fn=stylize, inputs=[content, style, alpha, model_select], outputs=[output_img, output_info])
+    btn.click(
+        fn=stylize, 
+        inputs=[content, style, alpha, model_select], 
+        outputs=[output_img, output_info]
+    )
 
-demo.launch()
+if __name__ == "__main__":
+    demo.launch(server_name="0.0.0.0", server_port=7860)

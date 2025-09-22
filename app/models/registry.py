@@ -1,11 +1,13 @@
 from app.models.adain import AdaINModel
 from app.models.adain_vgg import AdaINVGGModel
 from app.models.wct import WCTModel
+from app.models.ast import ASTModel
 
 model_map = {
     "adain": AdaINModel,
     "adain_vgg": AdaINVGGModel,
-    "wct": WCTModel
+    "wct": WCTModel,
+    "ast": ASTModel
 }
 
 def get_model(name: str):
