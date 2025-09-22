@@ -1,5 +1,5 @@
-fastapi==0.95.2
-uvicorn==0.22.0
+fastapi>=0.115.2
+uvicorn>=0.22.0
 gradio>=4.0.0
 pillow>=10.0.0
 numpy>=1.24.0

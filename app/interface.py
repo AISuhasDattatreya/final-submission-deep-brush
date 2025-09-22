@@ -7,36 +7,36 @@ import numpy as np
 
 def stylize(content, style, alpha, model):
     try:
-        # Convert Gradio image data to PIL Image
         if content is None or style is None:
             return None, "Please upload both content and style images"
         
         print(f"Content type: {type(content)}")
         print(f"Style type: {type(style)}")
         
-        # Handle numpy arrays from Gradio 5.x
         if isinstance(content, np.ndarray):
             print(f"Content array shape: {content.shape}")
             content_img = Image.fromarray(content)
+        elif isinstance(content, Image.Image):
+            content_img = content
         else:
             content_img = Image.open(content)
             
         if isinstance(style, np.ndarray):
             print(f"Style array shape: {style.shape}")
             style_img = Image.fromarray(style)
+        elif isinstance(style, Image.Image):
+            style_img = style
         else:
             style_img = Image.open(style)
         
         print(f"Content image size: {content_img.size}")
         print(f"Style image size: {style_img.size}")
         
-        # Convert to RGB if necessary
         if content_img.mode != 'RGB':
             content_img = content_img.convert('RGB')
         if style_img.mode != 'RGB':
             style_img = style_img.convert('RGB')
         
-        # Save to bytes for API
         content_buffer = io.BytesIO()
         style_buffer = io.BytesIO()
         content_img.save(content_buffer, format='PNG')
@@ -68,9 +68,8 @@ def stylize(content, style, alpha, model):
         traceback.print_exc()
         return None, f"Error: {str(e)}"
 
-# Create Gradio 5.x interface
-with gr.Blocks(title="Deep Brush: AST Model Comparison Tool") as demo:
-    gr.Markdown("# Deep Brush: AST Model Comparison Tool")
+with gr.Blocks(title="Deep Brush: Neural Style Transfer Comparison Tool") as demo:
+    gr.Markdown("# Deep Brush: Neural Style Transfer Comparison Tool")
     gr.Markdown("Upload a content image and a style image to see different neural style transfer algorithms in action!")
     
     with gr.Row():
@@ -80,7 +79,7 @@ with gr.Blocks(title="Deep Brush: AST Model Comparison Tool") as demo:
         
         with gr.Column():
             model_select = gr.Dropdown(
-                choices=["adain", "adain_vgg", "wct", "ast"], 
+                choices=["adain", "adain_vgg", "wct", "microast"], 
                 value="adain", 
                 label="Model",
                 info="Choose the style transfer algorithm"
